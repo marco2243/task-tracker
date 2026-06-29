@@ -1,163 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Task Tracker Pro</title>
-
-<style>
-  body {
-    font-family: Arial;
-    background: #111;
-    color: white;
-    display: flex;
-    justify-content: center;
-    margin-top: 40px;
-  }
-
-  .container {
-    width: 380px;
-    background: #1e1e1e;
-    padding: 20px;
-    border-radius: 12px;
-  }
-
-  h1 {
-    text-align: center;
-  }
-
-  input, button {
-    padding: 10px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 6px;
-  }
-
-  input {
-    width: 60%;
-  }
-
-  input[type="date"] {
-    width: 35%;
-  }
-
-  button {
-    background: orange;
-    color: black;
-    cursor: pointer;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  li {
-    background: #2a2a2a;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .task-top {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .completed {
-    text-decoration: line-through;
-    color: gray;
-  }
-
-  .date {
-    font-size: 12px;
-    color: #bbb;
-  }
-
-  .toggle-btn {
-    margin-top: 10px;
-    background: #444;
-    color: white;
-  }
-</style>
+  <title>Task Tracker Pro</title>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>Task Tracker 🚀</h1>
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
 
-  <input type="text" id="taskInput" placeholder="Enter task">
-  <input type="date" id="dateInput">
-  <button onclick="addTask()">Add</button>
+<h2>Tasks</h2>
+<input id="taskInput" placeholder="New task">
+<button onclick="addTask()">Add</button>
 
-  <button class="toggle-btn" onclick="toggleMode()">Toggle Dark/Light</button>
+<ul id="taskList"></ul>
 
-  <ul id="taskList"></ul>
-</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<script>
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-let darkMode = true;
+const firebaseConfig = {
+  apiKey: "AIzaSyA_ec5pnBX7Hk7AarHtPtRXaMrF5qD09n8",
+  authDomain: "task-tracker-pro-3948c.firebaseapp.com",
+  projectId: "task-tracker-pro-3948c",
+  storageBucket: "task-tracker-pro-3948c.firebasestorage.app",
+  messagingSenderId: "835312102863",
+  appId: "1:835312102863:web:d301ddcb4c40522e736ba",
+};
 
-function renderTasks() {
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+
+window.signup = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+  await createUserWithEmailAndPassword(auth, email, pass);
+  alert("User created!");
+};
+
+window.login = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+  const res = await signInWithEmailAndPassword(auth, email, pass);
+  user = res.user;
+  loadTasks();
+};
+
+window.addTask = async () => {
+  const text = document.getElementById("taskInput").value;
+  if (!user) return alert("Login first");
+
+  await addDoc(collection(db, "tasks"), {
+    text,
+    uid: user.uid
+  });
+
+  loadTasks();
+};
+
+async function loadTasks() {
+  const querySnapshot = await getDocs(collection(db, "tasks"));
   const list = document.getElementById("taskList");
   list.innerHTML = "";
 
-  tasks.forEach((task, index) => {
-    const li = document.createElement("li");
-
-    li.innerHTML = `
-      <div class="task-top">
-        <span onclick="toggleTask(${index})" class="${task.done ? 'completed' : ''}">
-          ${task.text}
-        </span>
-        <button onclick="deleteTask(${index})">❌</button>
-      </div>
-      <div class="date">Due: ${task.date || "No date"}</div>
-    `;
-
-    list.appendChild(li);
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.uid === user.uid) {
+      const li = document.createElement("li");
+      li.textContent = data.text;
+      list.appendChild(li);
+    }
   });
 }
-
-function addTask() {
-  const text = document.getElementById("taskInput").value;
-  const date = document.getElementById("dateInput").value;
-
-  if (text.trim() === "") return;
-
-  tasks.push({ text, date, done: false });
-
-  document.getElementById("taskInput").value = "";
-  document.getElementById("dateInput").value = "";
-
-  saveTasks();
-}
-
-function toggleTask(index) {
-  tasks[index].done = !tasks[index].done;
-  saveTasks();
-}
-
-function deleteTask(index) {
-  tasks.splice(index, 1);
-  saveTasks();
-}
-
-function saveTasks() {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
-  renderTasks();
-}
-
-function toggleMode() {
-  darkMode = !darkMode;
-  document.body.style.background = darkMode ? "#111" : "#f5f5f5";
-  document.body.style.color = darkMode ? "white" : "black";
-}
-
-renderTasks();
 </script>
 
 </body>
