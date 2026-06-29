@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Task Tracker</title>
+<style>
+body{font-family:Arial;text-align:center;margin-top:80px;background:#f4f4f4;}
+button{padding:12px 24px;}
+</style>
+</head>
+<body>
+<h1>Task Tracker</h1>
+<p>Manage your daily tasks easily.</p>
+<button>Get Started</button>
+</body>
+</html>
