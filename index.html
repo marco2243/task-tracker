@@ -1,109 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Task Tracker</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      margin-top: 50px;
-    }
-    .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 350px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-    }
-    input {
-      width: 70%;
-      padding: 8px;
-    }
-    button {
-      padding: 8px;
-      cursor: pointer;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-      background: #eee;
-      padding: 8px;
-      border-radius: 5px;
-    }
-    .completed {
-      text-decoration: line-through;
-      color: gray;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Task Tracker Pro</title>
+
+<style>
+  body {
+    font-family: Arial;
+    background: #111;
+    color: white;
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  .container {
+    width: 380px;
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  input, button {
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+  }
+
+  input {
+    width: 60%;
+  }
+
+  input[type="date"] {
+    width: 35%;
+  }
+
+  button {
+    background: orange;
+    color: black;
+    cursor: pointer;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    background: #2a2a2a;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .task-top {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .completed {
+    text-decoration: line-through;
+    color: gray;
+  }
+
+  .date {
+    font-size: 12px;
+    color: #bbb;
+  }
+
+  .toggle-btn {
+    margin-top: 10px;
+    background: #444;
+    color: white;
+  }
+</style>
 </head>
+
 <body>
 
 <div class="container">
-  <h1>Task Tracker</h1>
+  <h1>Task Tracker 🚀</h1>
 
   <input type="text" id="taskInput" placeholder="Enter task">
+  <input type="date" id="dateInput">
   <button onclick="addTask()">Add</button>
+
+  <button class="toggle-btn" onclick="toggleMode()">Toggle Dark/Light</button>
 
   <ul id="taskList"></ul>
 </div>
 
 <script>
-  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let darkMode = true;
 
-  function renderTasks() {
-    const list = document.getElementById("taskList");
-    list.innerHTML = "";
+function renderTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
 
-    tasks.forEach((task, index) => {
-      const li = document.createElement("li");
+  tasks.forEach((task, index) => {
+    const li = document.createElement("li");
 
-      li.innerHTML = `
+    li.innerHTML = `
+      <div class="task-top">
         <span onclick="toggleTask(${index})" class="${task.done ? 'completed' : ''}">
           ${task.text}
         </span>
         <button onclick="deleteTask(${index})">❌</button>
-      `;
+      </div>
+      <div class="date">Due: ${task.date || "No date"}</div>
+    `;
 
-      list.appendChild(li);
-    });
-  }
+    list.appendChild(li);
+  });
+}
 
-  function addTask() {
-    const input = document.getElementById("taskInput");
-    if (input.value.trim() === "") return;
+function addTask() {
+  const text = document.getElementById("taskInput").value;
+  const date = document.getElementById("dateInput").value;
 
-    tasks.push({ text: input.value, done: false });
-    input.value = "";
-    saveTasks();
-  }
+  if (text.trim() === "") return;
 
-  function toggleTask(index) {
-    tasks[index].done = !tasks[index].done;
-    saveTasks();
-  }
+  tasks.push({ text, date, done: false });
 
-  function deleteTask(index) {
-    tasks.splice(index, 1);
-    saveTasks();
-  }
+  document.getElementById("taskInput").value = "";
+  document.getElementById("dateInput").value = "";
 
-  function saveTasks() {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-    renderTasks();
-  }
+  saveTasks();
+}
 
+function toggleTask(index) {
+  tasks[index].done = !tasks[index].done;
+  saveTasks();
+}
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  saveTasks();
+}
+
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
   renderTasks();
+}
+
+function toggleMode() {
+  darkMode = !darkMode;
+  document.body.style.background = darkMode ? "#111" : "#f5f5f5";
+  document.body.style.color = darkMode ? "white" : "black";
+}
+
+renderTasks();
 </script>
 
 </body>
